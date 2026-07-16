@@ -1,0 +1,95 @@
+1.(a).
+The type of operating system suitable for this environment is multiuser operating system as multiple students executes the program simultaneously in a shared linux server.
+1.(b).
+Some of the responsibilities of the kernel in managing multiple user processes are:
+Process Scheduling and Process Synchronization
+1(c).
+To create a child process and display child process and parent process:
+pseudo code:
+step1:Use header file <stdio.h> and <unistd.h>.
+(<unistd.h> is a header file in c used with system calls such as fork(), getpid(),etc.
+step2:use datatype pid_t to create a child process.
+step3:define pid=fork();(fork() helps to create child process)
+step4:print child process.
+step5:print child processid and parent process id using getpid(),getppid().(getpid and getppid is udes to diplay the child process id and parent process id)
+step6:return 0 to end the program;
+
+2.(a).
+system calls required for file creation,writing,reading and closing are: 
+creat() – To Create a file
+write() – To Write data to the file
+read() – To Read data from the file
+close() – To Close the file
+2.(b).
+Purpose of any two system calls
+open() – Opens an existing file or creates a new file.
+write() – Writes data from memory into the file.
+2.(c).
+to create a file, write a student name, and close the file.
+Pseudocode:
+Step1:Use the header files <stdio.h>, <fcntl.h>, and <unistd.h>.
+(<fcntl.h> is a header file in C used with system calls like open(), fcntl(), and creat())
+Step 2: Declare an integer variable fd to store the file descriptor.
+Step 3: Create a file using fd = creat("student.txt", 0644); (creat() is used to create a new file.)
+Step 4: Write the student name into the file using write(fd, "John", 4); (write() is used to write data into the file.)
+Step 5: Close the file using close(fd); (close() is used to close the file after completing the operation.)
+Step 6: return 0 to end the program.
+
+3.(a).
+System calls required to copy the contents of one file to another
+open() – Open the source file.
+creat() or open() – Create/Open the destination file.
+read() – Read data from the source file.
+write() – Write data to the destination file.
+close() – Close both files.
+3.(b).
+Purpose of any two system calls
+1. read()-Reads data from the source file.
+2. write()-Writes the data copied from source file into the destination file.
+3.(c).
+To copy the contents of one file to another:
+Pseudo-code
+Step 1: Use header files <stdio.h>, <unistd.h>, and <fcntl.h>.
+Step 2: Open the source file using open().
+Step 3: Create/Open the destination file using creat() (or open()).
+Step 4: Read data from the source file using read().
+Step 5: Write the data to the destination file using write().
+Step 6: Repeat Steps 4 and 5 until the end of the source file is reached.
+Step 7: Close both files using close().
+
+4.(a).
+The purpose of the fork() and exec() system call:
+fork()-This system call helps in the creation of the new child process.
+exec() – This system call is used to execute a new program by replacing the current process with the specified program.
+4.(b).
+The role of wait() system call:
+The wait() system call ensures that the parent process waits untill the child process completes its execution and continues only after the children process is completed.  
+4.(c).
+To Write a system call sequence using fork(), exec(), and wait().
+The three system call sequence can be seen when a child process is replaced by new program
+(As first we have to create a child process using fork() first) 
+(Then by using exec() we can replace the child process with new program )
+(And we can use wait() simultaneously as to make parent process wait till the child process execution)  
+
+5.(a).
+The importance of file management in an operating system.
+File management helps to create, store, retrieve, update, and delete files.
+It organizes files and provides secure access to data.
+5.(b).
+The purpose of the open() and close() system calls:
+open()-Opens an existing file or creates a file.
+close()-Closes the opened file.
+5.(c).
+To write a c code to open a file, read its contents, and close it.
+
+C code:
+
+#include <unistd.h>
+#include <fcntl.h>
+int main() {
+    char buffer[100];(A buffer is simply a temporary storage area.)
+    int fd = open("student.txt", O_RDONLY);(O_RDONLY is about readonly acces for student.txt file)
+    read(fd, buffer, 100);(fd=file description,array,limit)
+    close(fd);(closing the file description)
+    return 0;
+}
