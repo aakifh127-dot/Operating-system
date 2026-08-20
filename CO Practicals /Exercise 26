@@ -1,0 +1,23 @@
+#include <stdio.h>
+
+int main()
+{
+    FILE *fp;
+    char text[100];
+
+    /* Create and write */
+    fp = fopen("file.txt", "w");
+    printf("Enter text: ");
+    scanf(" %[^\n]", text);
+    fprintf(fp, "%s", text);
+    fclose(fp);
+
+    /* Read */
+    fp = fopen("file.txt", "r");
+    printf("\nFile contents: ");
+    while(fscanf(fp, "%[^\n]", text) != EOF)
+        printf("%s", text);
+    fclose(fp);
+
+    return 0;
+}
