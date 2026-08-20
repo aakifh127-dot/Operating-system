@@ -1,0 +1,65 @@
+#include <stdio.h>
+#include <string.h>
+
+int main()
+{
+    char directory[5][20];
+    char files[5][5][20];
+    int n, m[5], i, j;
+    char dname[20], fname[20];
+
+    printf("Enter number of directories: ");
+    scanf("%d", &n);
+
+    for (i = 0; i < n; i++)
+    {
+        printf("\nEnter directory name: ");
+        scanf("%s", directory[i]);
+
+        printf("Enter number of files: ");
+        scanf("%d", &m[i]);
+
+        printf("Enter file names:\n");
+        for (j = 0; j < m[i]; j++)
+        {
+            scanf("%s", files[i][j]);
+        }
+    }
+
+    printf("\nTwo-Level Directory:\n");
+
+    for (i = 0; i < n; i++)
+    {
+        printf("\nDirectory: %s\n", directory[i]);
+
+        for (j = 0; j < m[i]; j++)
+        {
+            printf("  %s\n", files[i][j]);
+        }
+    }
+
+    printf("\nEnter directory name to search: ");
+    scanf("%s", dname);
+
+    printf("Enter file name to search: ");
+    scanf("%s", fname);
+
+    for (i = 0; i < n; i++)
+    {
+        if (strcmp(directory[i], dname) == 0)
+        {
+            for (j = 0; j < m[i]; j++)
+            {
+                if (strcmp(files[i][j], fname) == 0)
+                {
+                    printf("File found.\n");
+                    return 0;
+                }
+            }
+        }
+    }
+
+    printf("File not found.\n");
+
+    return 0;
+}
