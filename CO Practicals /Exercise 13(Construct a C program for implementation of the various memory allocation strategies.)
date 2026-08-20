@@ -1,0 +1,60 @@
+#include <stdio.h>
+
+int main()
+{
+    int b[10], p[10], n, m, i, j, k, best, worst;
+
+    printf("Enter number of blocks: ");
+    scanf("%d", &n);
+
+    printf("Enter block sizes: ");
+    for(i = 0; i < n; i++)
+        scanf("%d", &b[i]);
+
+    printf("Enter number of processes: ");
+    scanf("%d", &m);
+
+    printf("Enter process sizes: ");
+    for(i = 0; i < m; i++)
+        scanf("%d", &p[i]);
+
+    /* First Fit */
+    printf("\nFirst Fit:\n");
+    for(i = 0; i < m; i++)
+        for(j = 0; j < n; j++)
+            if(b[j] >= p[i]) {
+                printf("P%d -> B%d\n", i+1, j+1);
+                b[j] -= p[i];
+                break;
+            }
+
+    /* Best Fit */
+    printf("\nBest Fit:\n");
+    for(i = 0; i < m; i++) {
+        best = -1;
+        for(j = 0; j < n; j++)
+            if(b[j] >= p[i] && (best == -1 || b[j] < b[best]))
+                best = j;
+
+        if(best != -1) {
+            printf("P%d -> B%d\n", i+1, best+1);
+            b[best] -= p[i];
+        }
+    }
+
+    /* Worst Fit */
+    printf("\nWorst Fit:\n");
+    for(i = 0; i < m; i++) {
+        worst = -1;
+        for(j = 0; j < n; j++)
+            if(b[j] >= p[i] && (worst == -1 || b[j] > b[worst]))
+                worst = j;
+
+        if(worst != -1) {
+            printf("P%d -> B%d\n", i+1, worst+1);
+            b[worst] -= p[i];
+        }
+    }
+
+    return 0;
+}
