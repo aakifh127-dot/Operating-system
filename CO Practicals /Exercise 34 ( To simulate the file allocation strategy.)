@@ -1,0 +1,46 @@
+#include <stdio.h>
+
+int main()
+{
+    int records[20];
+    int n, i, pos;
+
+    printf("Enter number of records: ");
+    scanf("%d", &n);
+
+    printf("Enter the records:\n");
+
+    for (i = 0; i < n; i++)
+    {
+        scanf("%d", &records[i]);
+    }
+
+    printf("\nRecords in sequential order:\n");
+
+    for (i = 0; i < n; i++)
+    {
+        printf("Record %d: %d\n", i + 1, records[i]);
+    }
+
+    printf("\nEnter record number to access: ");
+    scanf("%d", &pos);
+
+    if (pos < 1 || pos > n)
+    {
+        printf("Invalid record number.\n");
+    }
+    else
+    {
+        printf("\nReading records sequentially...\n");
+
+        for (i = 0; i < pos; i++)
+        {
+            printf("Reading Record %d: %d\n",
+                   i + 1, records[i]);
+        }
+
+        printf("\nRequired Record: %d\n", records[pos - 1]);
+    }
+
+    return 0;
+}
