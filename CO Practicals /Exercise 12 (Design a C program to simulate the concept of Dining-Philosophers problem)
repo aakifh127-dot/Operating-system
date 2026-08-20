@@ -1,0 +1,47 @@
+#include <stdio.h>
+#include <pthread.h>
+#include <unistd.h>
+
+#define N 5
+
+pthread_mutex_t chopstick[N];
+
+void *philosopher(void *arg)
+{
+    int i = *(int *)arg;
+    int left = i;
+    int right = (i + 1) % N;
+
+    printf("Philosopher %d is thinking\n", i + 1);
+
+    pthread_mutex_lock(&chopstick[left]);
+    pthread_mutex_lock(&chopstick[right]);
+
+    printf("Philosopher %d is eating\n", i + 1);
+    sleep(1);
+
+    pthread_mutex_unlock(&chopstick[right]);
+    pthread_mutex_unlock(&chopstick[left]);
+
+    return NULL;
+}
+
+int main()
+{
+    pthread_t p[N];
+    int id[N], i;
+
+    for(i = 0; i < N; i++)
+        pthread_mutex_init(&chopstick[i], NULL);
+
+    for(i = 0; i < N; i++)
+    {
+        id[i] = i;
+        pthread_create(&p[i], NULL, philosopher, &id[i]);
+    }
+
+    for(i = 0; i < N; i++)
+        pthread_join(p[i], NULL);
+
+    return 0;
+}
