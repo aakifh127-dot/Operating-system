@@ -1,0 +1,284 @@
+1. Optimized Linux File System Layout for a 50 GB Server
+Answer:
+ *The given server has only 50 GB of storage, but it has to handle system logs, user files, and application data.
+ *The main problem is that log files can keep increasing continuously. 
+ *If they occupy the complete disk, the operating system may not have enough space for normal operations, and important services may stop working.
+ 
+ *To avoid this situation, I would divide the disk into different partitions instead of keeping everything under one partition. This makes storage management easier and also prevents one type of data from consuming all the available space.
+
+A suitable layout for the 50 GB disk would be:
+   */boot – 1 GB
+   *swap – 4 GB
+   */ – 12 GB
+   */var – 10 GB
+   */home – 12 GB
+   */data – 11 GB
+
+ *The /var partition is especially important because Linux stores log files and other frequently changing data under /var. 
+  By keeping it separate, even if the logs grow, they will not directly fill the root filesystem.
+
+ *For the log files, I would use logrotate. It automatically rotates old logs, compresses them, and removes very old files according to the configured policy. 
+  This prevents a single log file from continuously increasing in size.
+
+ *I would also monitor the disk regularly. If the /var partition starts approaching its limit, the administrator can receive an alert and take action before the disk becomes full.
+
+ *The important constraint in this problem is that log files must not exceed 10 GB. 
+  Therefore, the log rotation policy should be configured with a suitable size limit and number of backup files. Old logs can be compressed so that they consume less space.
+
+ *This design also helps maintain system stability.
+  For example, if user files suddenly increase, they will mainly affect /home instead of consuming the space required by the operating system. Similarly, growing logs will be restricted to /var.
+
+ *Therefore, using separate partitions, log rotation, compression, and disk monitoring provides better utilization of the 50 GB storage and reduces the chance of critical services stopping because of disk exhaustion.
+
+Linux Commands / Code:
+1.Check disk usage: df -h 
+2.Check which directories are using more space: du -sh /var/*
+  Example logrotate configuration:
+    /var/log/myapp.log {
+    daily
+    rotate 7
+    size 1G
+    compress
+    delaycompress
+    missingok
+    notifempty
+}
+3.Test logrotate configuration: sudo logrotate -d /etc/logrotate.conf
+4.Force log rotation for testing: sudo logrotate -f /etc/logrotate.conf
+5.Simple disk-space monitoring script:
+  #!/bin/bash
+  USAGE=$(df /var | awk 'NR==2 {print $5}' | tr -d '%')
+  if [ "$USAGE" -ge 80 ]; then
+    echo "Warning: /var is more than 80% full"
+  else
+    echo "/var storage is under control"
+  fi
+
+Sample output:
+/var storage is under control
+
+2. Reducing Context Switching Delays in Linux
+Answer:
+   *The given Linux system is handling a high CPU workload and is suffering from frequent context switching delays. 
+    A context switch happens when the CPU stops executing one process and starts executing another process. 
+    Some context switching is necessary in a multitasking operating system, but too much switching creates overhead because the CPU has to save the state of one process and load the state of another.
+
+   *Since hardware upgrades are not possible, I would try to solve the problem at the operating system level.
+
+   *First, I would identify which processes are consuming most of the CPU and whether they are causing excessive context switching. 
+    Linux provides tools such as top, pidstat, and vmstat for this purpose.
+
+   *After identifying the important processes, I would adjust their scheduling behavior. 
+    Processes that are not important can be given a lower priority so that CPU time is available for more important workloads.
+
+   *For real-time applications, Linux provides real-time scheduling policies such as SCHED_FIFO and SCHED_RR.
+    These can be used when a process needs predictable CPU access. 
+    However, I would use them carefully because giving too many processes real-time priority can affect the rest of the system.
+
+   *Another useful technique is CPU affinity. It allows a process to run on a particular CPU core.
+    This can reduce unnecessary movement of a process between cores and can improve cache usage.
+
+   *Kernel configuration can also be considered. 
+    If the application requires very low scheduling latency, a suitable real-time Linux kernel, such as a kernel based on PREEMPT_RT, can be considered.
+
+   *Kernel modules can also be used to add required functionality without rebuilding the complete kernel. 
+    However, I would not load unnecessary modules because the main goal is optimization, not simply increasing the number of modules.
+
+   *So, my approach would be to first measure the problem, identify the processes causing it, tune their scheduling, use CPU affinity where appropriate, and then test the performance again.
+
+   *This approach is better than blindly changing kernel parameters because every change should be checked to see whether it actually improves the real-time workload.
+
+Linux Commands / Code:
+
+1.Check CPU usage: top
+2.Find processes using the most CPU: ps aux --sort=-%cpu | head
+3.Check context switching: pidstat -w 1
+4.Check general system performance: vmstat 1
+5.Set CPU affinity: taskset -c 2 ./realtime_program
+6.Set real-time scheduling priority: sudo chrt -r 50 ./realtime_program
+7.Change process priority: renice +10 -p 2456
+8.Check loaded kernel modules: lsmod
+9.Load a required kernel module:sudo modprobe module_name
+
+
+3. Processing 1 Million Log Entries Within 2 Minutes
+Answer:
+  *In this problem, the administrator has to process 1 million log entries every day using only shell scripting, and the script must finish within 2 minutes.
+
+  *The main issue is not only the number of log entries but also how the script processes them.
+   If I use a separate command for every line, the script will become very slow because the system has to create a large number of processes.
+
+  *Therefore, I would use Linux commands such as awk and grep, which can process large files efficiently. 
+   I would try to read the log file only once whenever possible.
+
+  *For example, 
+       if I need to count errors, warnings, and information messages, I can use one awk command instead of writing a loop that executes another command for every log entry.
+
+  *I would avoid unnecessary commands such as using cat just to send a file to grep.
+   I would also avoid repeatedly opening the same log file.
+
+  *The processing should be designed as a single-pass operation whenever possible.
+   This means the script reads each log entry once, checks the required information, and updates the required counters.
+
+  *After writing the script, I would measure its execution time using the time command.
+   If it takes more than two minutes, I would identify the slow part and optimize it.
+
+  *The exact execution time will depend on the system, disk speed, size of each log entry, and the type of processing being performed.
+   However, using efficient commands and avoiding unnecessary loops gives the best chance of meeting the two-minute requirement.
+
+Pseudocode:
+
+START
+Open the log file
+Set ERROR = 0
+Set WARNING = 0
+Set INFO = 0
+For each log entry:
+    If entry contains "ERROR":
+        Increase ERROR count
+    Else if entry contains "WARNING":
+        Increase WARNING count
+    Else if entry contains "INFO":
+        Increase INFO count
+Display ERROR count
+Display WARNING count
+Display INFO count
+END
+
+Linux Code:
+#!/bin/bash
+LOGFILE="application.log"
+awk '
+{
+    if ($0 ~ /ERROR/)
+        error++
+    else if ($0 ~ /WARNING/)
+        warning++
+    else if ($0 ~ /INFO/)
+        info++
+}
+END {
+    print "ERROR:", error
+    print "WARNING:", warning
+    print "INFO:", info
+}
+' "$LOGFILE"
+
+Sample output:
+
+ ERROR: 152340
+ WARNING: 238410
+ INFO: 609250
+ For counting only errors:
+
+ grep -c "ERROR" application.log
+
+*Measure execution time: time ./process_logs.sh 
+Example output:
+  real :0m18.42s
+  user :0m16.80s
+  sys  :0m1.50s
+*This indicates that the script completed in less than 2 minutes in that test.
+
+4. Managing a Faulty Process Consuming 90% CPU
+Answer:
+  *In this situation, one faulty process is consuming around 90% of the CPU while other important services are running. 
+   Since restarting the complete system is not allowed, I would handle only the faulty process.
+
+  *The first step is to identify the process. 
+   I can use top or ps to find which process is consuming excessive CPU.
+
+  *After finding the process ID, I would not immediately terminate it. 
+   First, I would check what the process is doing and whether it belongs to a critical service.
+   This is important because killing the wrong process could affect the entire application or server.
+
+  *I would then monitor the process for some time. 
+   If the CPU usage remains close to 90%, I would try reducing its priority using renice. 
+   This gives other processes a better chance to use the CPU.
+
+  *If the process is confirmed to be faulty and continues affecting the system, I would first terminate it gracefully using kill. 
+   A normal termination gives the process an opportunity to clean up its resources.
+
+  *Only if the process does not respond would I use kill -9. 
+   I would treat this as the last option because it immediately terminates the process.
+
+  *Throughout the process, I would make sure that critical services are not affected. 
+   I would also check system logs after the process is stopped to understand why it was consuming excessive CPU.
+
+  *Therefore, the overall approach is:
+      Identify → Verify → Monitor → Reduce priority → Gracefully stop → Force stop only if necessary.
+   This allows the faulty process to be controlled without restarting the server.
+
+Linux Commands / Code:
+
+1.Find high CPU processes: top
+2.or: ps aux --sort=-%cpu | head
+3.Check a particular process: ps -p 2456 -o pid,ppid,user,%cpu,%mem,stat,cmd
+4.Monitor the process: top -p 2456
+5.or: pidstat -p 2456 1
+6.Reduce its priority: renice +10 -p 2456
+7.Gracefully terminate it: kill 2456
+8.Force termination only if required: kill -9 2456
+9.Check running services: systemctl --type=service --state=running
+
+
+5. Allocating 16 GB RAM Among 5 Virtual Machines
+Answer:
+  *The physical server has 16 GB of RAM and needs to run five virtual machines.
+   Each VM requires at least 2 GB, while the host operating system requires 4 GB.
+
+  *First, I would calculate the minimum memory required by the five VMs:
+     5 VMs × 2 GB = 10 GB
+     The host requires: 4 GB
+     Therefore: 10 GB + 4 GB = 14 GB
+   Out of the available 16 GB, there are: 16 GB − 14 GB = 2 GB remaining
+   So technically, all five VMs can run with their minimum requirement.
+
+  *I would allocate 2 GB to each VM and 4 GB to the host, while keeping the remaining 2 GB available as a reserve for the virtualization environment and temporary memory requirements.
+
+  *The reason I would not immediately give extra RAM to one VM is that all five VMs have the same minimum requirement.
+   If I allocate too much memory to one VM, the host may become short of memory and the other VMs may suffer.
+
+  *For example,
+     if one VM is given 4 GB, there may be no useful reserve left. 
+     This can create memory pressure when the host or other VMs require additional memory.
+
+  *I would also monitor the actual memory usage of every VM. 
+   If one VM is consistently using more memory while another VM is barely using its allocation, memory can be adjusted based on workload.
+
+  *Virtualization technologies may also provide techniques such as memory ballooning, which can dynamically reclaim memory from VMs when the host needs it. However, memory overcommit should be used carefully because if all VMs require their maximum memory at the same time, performance can decrease.
+
+  *Swap can also be configured on the host as an emergency mechanism, but it should not be considered a replacement for physical RAM because excessive swapping can make the system slow.
+
+  *Therefore, under the given constraints, the safest approach is to give 4 GB to the host and 2 GB to each VM, while keeping the remaining memory available for overhead and unexpected requirements.
+
+Calculation:
+Total RAM = 16 GB
+Host requirement = 4 GB
+Number of VMs = 5
+Memory per VM = 2 GB
+VM memory = 5 × 2
+           = 10 GB
+Total required = 4 + 10
+               = 14 GB
+Remaining memory = 16 - 14
+                 = 2 GB
+Proposed Allocation
+Host OS = 4 GB
+VM1 = 2 GB
+VM2 = 2 GB
+VM3 = 2 GB
+VM4 = 2 GB
+VM5 = 2 GB
+
+Remaining = 2 GB
+
+Linux Commands for Monitoring:
+
+1.Check host memory: free -h
+2.Monitor continuously: watch -n 2 free -h
+3.If using KVM/libvirt, list virtual machines: virsh list --all
+4.Check a VM's configuration: virsh dominfo VM1
+
+  *The important point is that 16 GB is sufficient for the minimum requirements, because the five VMs need 10 GB and the host needs 4 GB, leaving 2 GB as a reserve.
+   The allocation should be monitored continuously, and memory should be increased for a VM only when its actual workload requires it.
