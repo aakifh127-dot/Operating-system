@@ -1,0 +1,251 @@
+1.Preventing disk overflow caused by continuously increasing log files. 
+Answer:
+     *When applications continuously generate log files, the disk can slowly become full. If the disk reaches maximum capacity, the operating system or applications may fail to save new data. So, the system should regularly check disk usage and clean old or large log files whenever the usage crosses the limit.
+
+     *Here, the threshold is fixed at 80%. If disk usage is greater than 80%, the system identifies log files, sorts them based on size, and then deletes or compresses them until the disk usage becomes safe again. This follows the same logic given in the assessment sheet. 
+
+Pseudocode:
+BEGIN
+SET threshold = 80%
+usage = GET_DISK_USAGE()
+IF usage > threshold THEN
+IDENTIFY log_files
+SORT log_files BY size DESCENDING
+FOR each file IN log_files DO
+DELETE or COMPRESS file
+usage = GET_DISK_USAGE()
+IF usage <= threshold THEN
+BREAK
+ENDIF
+ENDFOR
+ENDIF
+END
+
+The algorithm checks the disk and finds that 90% > 80%. It then finds the log files and starts deleting or compressing the larger files first. After every operation, it checks the disk usage again.
+
+Example:
+
+Initial Disk Usage = 90%
+Deleting/Compressing log1.txt
+Disk Usage = 86%
+Deleting/Compressing log2.txt
+Disk Usage = 81%
+Deleting/Compressing log3.txt
+Disk Usage = 77%
+
+Disk usage is now below 80%.
+Cleaning process stopped.
+
+Result:
+    *Thus, the algorithm continuously monitors disk space and automatically deletes or compresses log files when disk utilization exceeds 80%, helping to prevent disk overflow and maintain efficient system operation.
+
+2.To improve CPU efficiency using a priority-based scheduling algorithm, where processes are selected and executed according to their priority levels
+
+Answer:
+   *In priority scheduling, every process is assigned a priority. The CPU gives preference to the process with the highest priority.
+
+  *The process list is first sorted based on priority. The process with the highest priority is selected and given CPU time. If the process is not completed, its priority is reduced slightly and it is added back to the process list. 
+
+   *This prevents one process from continuously getting the CPU and helps other processes also get execution time. This is the logic given in the assessment sheet. 
+
+Pseudocode:
+BEGIN
+INPUT process_list
+SORT process_list BY priority (highest first)
+WHILE process_list NOT EMPTY DO
+SELECT process WITH highest priority
+ALLOCATE CPU time
+EXECUTE process
+IF process NOT completed THEN
+REDUCE priority slightly
+ADD process back to process_list
+ENDIF
+ENDWHILE
+END
+
+Simple working:
+Assume there are three processes:
+
+P1 - Priority 2
+P2 - Priority 5
+P3 - Priority 3
+
+Since P2 has the highest priority, it is executed first.
+
+Then the order will be approximately: P2 → P3 → P1
+
+   *If P2 does not finish in its allocated CPU time, its priority is reduced and it is placed back in the process list.
+
+Example Output:
+Process P2 selected
+CPU allocated to P2
+P2 partially completed
+Priority of P2 reduced
+
+Process P3 selected
+CPU allocated to P3
+P3 completed
+
+Process P1 selected
+CPU allocated to P1
+P1 completed
+
+Result:
+Thus, the priority-based scheduling algorithm selects processes according to their priority and allocates CPU time efficiently, helping to improve CPU utilization and balanced process execution.
+
+3.To efficiently distribute RAM among multiple virtual machines so that memory is used in a balanced way.
+
+Answer:
+   *In a virtualized system, several virtual machines share the physical RAM of the host computer. If RAM is not allocated properly, one VM may use too much memory while others may not get enough.
+
+    *In the given problem, the system has 16 GB RAM. Out of this, 4 GB is reserved for the host operating system, so the remaining 12 GB can be used by the virtual machines. 
+
+    *Each VM is given a minimum of 2 GB RAM as long as enough memory is available. This follows the pseudocode provided in the assessment. 
+
+Pseudocode:
+
+BEGIN
+total_RAM = 16GB
+host_reserved = 4GB
+available_RAM = total_RAM - host_reserved
+INPUT number_of_VMs
+min_RAM = 2GB
+FOR i = 1 TO number_of_VMs DO
+IF available_RAM >= min_RAM THEN
+ALLOCATE min_RAM to VM[i]
+available_RAM = available_RAM - min_RAM
+ELSE
+PRINT "Insufficient memory"
+ENDIF
+ENDFOR
+END
+
+Simple Working:
+
+Suppose there are 5 virtual machines.
+Available RAM:16 GB - 4 GB = 12 GB
+Each VM requires 2 GB.
+
+VM1 = 2 GB
+Remaining = 10 GB
+
+VM2 = 2 GB
+Remaining = 8 GB
+
+VM3 = 2 GB
+Remaining = 6 GB
+
+VM4 = 2 GB
+Remaining = 4 GB
+
+VM5 = 2 GB
+Remaining = 2 GB
+
+So all 5 virtual machines can be allocated memory successfully.
+
+Example Output
+Total RAM = 16 GB
+Host Reserved RAM = 4 GB
+Available RAM = 12 GB
+
+2 GB allocated to VM1
+2 GB allocated to VM2
+2 GB allocated to VM3
+2 GB allocated to VM4
+2 GB allocated to VM5
+
+Remaining RAM = 2 GB
+If the available RAM is less than 2 GB, the algorithm displays:
+Insufficient memory
+
+Result
+  *Thus, the algorithm manages RAM by reserving memory for the host system and allocating a minimum amount of RAM to each virtual machine, ensuring balanced and efficient memory utilization.
+
+4.To select the most appropriate hypervisor based on performance requirement, budget, and hardware access, and justify the choice. 
+Answer:
+    *If high performance is required and direct hardware access is available, choose a Type 1 Hypervisor.
+    *If the budget is low, choose a Type 2 Hypervisor.
+Otherwise, choose a Type 1 Hypervisor. 
+
+Pseudocode:
+
+BEGIN
+INPUT performance_required, budget, hardware_access
+IF performance_required = HIGH AND hardware_access = TRUE THEN
+SELECT Type_1_Hypervisor
+ELSE IF budget = LOW THEN
+SELECT Type_2_Hypervisor
+ELSE
+SELECT Type_1_Hypervisor
+ENDIF
+PRINT selected_hypervisor
+END
+
+
+Simple Working
+Suppose the input is:
+      *Performance Required = HIGH
+      *Budget = HIGH
+      *Hardware Access = TRUE
+
+Since high performance and hardware access are available, the algorithm selects:
+Type 1 Hypervisor
+
+  *A Type 1 Hypervisor is selected when performance is important because it works directly with the hardware and is suitable for efficient resource utilization.
+
+  *A Type 2 Hypervisor is selected when the budget is low because it can operate on top of an existing operating system and is suitable for less demanding environments.
+
+Result:
+  *Thus, the algorithm selects the suitable hypervisor by analyzing performance, budget, and hardware access, helping the system achieve efficient virtualization and resource utilization.
+
+5.The task is to manage and control the CPU and memory usage of applications so that no single application consumes too many system resources.
+
+Answer:
+     *In Linux, cgroups (control groups) are used to limit and manage resources such as CPU and memory for different applications.
+
+     *For each application, the system creates a separate cgroup, sets a CPU limit and memory limit, and then assigns the application process to that cgroup. 
+     *This helps maintain balanced system performance and prevents one application from using excessive resources. 
+
+Pseudocode:
+BEGIN
+INPUT application_list
+FOR each app IN application_list DO
+CREATE cgroup for app
+SET CPU limit
+SET memory limit
+ASSIGN process to cgroup
+ENDFOR
+END
+
+Simple Working:
+
+Suppose there are three applications:App1,App2,App3
+
+The system creates separate cgroups for them and applies limits.
+
+App1 → CPU limit + Memory limit
+App2 → CPU limit + Memory limit
+App3 → CPU limit + Memory limit
+
+After setting the limits, each application process is assigned to its corresponding cgroup.
+
+Example Output
+
+Cgroup created for App1
+CPU limit set for App1
+Memory limit set for App1
+App1 assigned to cgroup
+
+Cgroup created for App2
+CPU limit set for App2
+Memory limit set for App2
+App2 assigned to cgroup
+
+Cgroup created for App3
+CPU limit set for App3
+Memory limit set for App3
+App3 assigned to cgroup
+
+Result:
+    *Thus, the algorithm uses cgroups to control CPU and memory usage of applications, helping to achieve balanced resource utilization and efficient system performance.
+
