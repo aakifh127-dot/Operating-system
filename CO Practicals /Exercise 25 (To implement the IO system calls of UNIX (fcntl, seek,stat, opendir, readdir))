@@ -1,0 +1,87 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <sys/stat.h>
+#include <dirent.h>
+
+int main()
+{
+    int fd;
+    char buffer[100];
+    struct stat fileInfo;
+    DIR *dir;
+    struct dirent *entry;
+
+    /* 1. Open a file */
+    fd = open("sample.txt", O_RDWR | O_CREAT, 0644);
+
+    if (fd == -1)
+    {
+        perror("File opening failed");
+        return 1;
+    }
+
+    printf("File opened successfully.\n");
+
+    /* Write some data */
+    write(fd, "Hello UNIX System Calls", 23);
+
+    /* 2. fcntl() - get file status flags */
+    int flags = fcntl(fd, F_GETFL);
+
+    if (flags == -1)
+    {
+        perror("fcntl failed");
+    }
+    else
+    {
+        printf("\nfcntl(): File status flags = %d\n", flags);
+    }
+
+    /* 3. lseek() - move file pointer to beginning */
+    lseek(fd, 0, SEEK_SET);
+
+    read(fd, buffer, 23);
+    buffer[23] = '\0';
+
+    printf("\nlseek(): File pointer moved to beginning.\n");
+    printf("File content: %s\n", buffer);
+
+    /* 4. stat() - obtain file information */
+    if (stat("sample.txt", &fileInfo) == 0)
+    {
+        printf("\nstat(): File information\n");
+        printf("File size : %ld bytes\n", (long)fileInfo.st_size);
+        printf("File inode: %ld\n", (long)fileInfo.st_ino);
+        printf("File permissions: %o\n", fileInfo.st_mode & 0777);
+    }
+    else
+    {
+        perror("stat failed");
+    }
+
+    close(fd);
+
+    /* 5. opendir() - open current directory */
+    dir = opendir(".");
+
+    if (dir == NULL)
+    {
+        perror("Unable to open directory");
+        return 1;
+    }
+
+    printf("\nopendir() and readdir():\n");
+    printf("Files in current directory:\n");
+
+    /* 6. readdir() - read directory entries */
+    while ((entry = readdir(dir)) != NULL)
+    {
+        printf("%s\n", entry->d_name);
+    }
+
+    closedir(dir);
+
+    return 0;
+}
